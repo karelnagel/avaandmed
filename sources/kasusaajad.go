@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-
-	"github.com/schollz/progressbar/v3"
 	"gorm.io/gorm"
 )
 
@@ -68,7 +66,7 @@ func ParseKasusaajad(db *gorm.DB, batchSize int) error {
 
 	kasusaajad := make([]Kasusaaja, 0, batchSize)
 
-	bar := progressbar.Default(utils.COMPANIES)
+	bar := utils.NewProgressBar(utils.COMPANIES, "Processing Kasusaajad")
 	for decoder.More() {
 		bar.Add(1)
 		var value KasusaajadJSON

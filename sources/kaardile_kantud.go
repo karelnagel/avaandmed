@@ -4,10 +4,8 @@ import (
 	"avaandmed/utils"
 	"encoding/json"
 	"fmt"
-	"os"
-
-	"github.com/schollz/progressbar/v3"
 	"gorm.io/gorm"
+	"os"
 )
 
 type KaardileKantudJSON struct {
@@ -89,7 +87,7 @@ func ParseKaardileKantud(db *gorm.DB, batchSize int) error {
 
 	kaardileKantud := make([]KaardileKantudIsik, 0, batchSize)
 
-	bar := progressbar.Default(utils.COMPANIES)
+	bar := utils.NewProgressBar(utils.COMPANIES, "Processing Kaardile Kantud")
 	for decoder.More() {
 		bar.Add(1)
 		var value KaardileKantudJSON

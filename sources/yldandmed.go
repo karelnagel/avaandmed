@@ -4,10 +4,10 @@ import (
 	"avaandmed/utils"
 	"encoding/json"
 	"fmt"
-	"github.com/schollz/progressbar/v3"
 	"gorm.io/gorm"
 	"os"
 )
+
 
 func ParseYldandmed(db *gorm.DB, batchSize int) error {
 	source := utils.Source{
@@ -46,8 +46,7 @@ func ParseYldandmed(db *gorm.DB, batchSize int) error {
 	pohikirjad := make([]Pohikiri, 0, batchSize)
 	infoMajandusaastaAruannetest := make([]InfoMajandusaastaAruandest, 0, batchSize)
 
-	bar := progressbar.Default(utils.COMPANIES)
-
+	bar := utils.NewProgressBar(utils.COMPANIES, "Processing Yldandmed")
 	for decoder.More() {
 		bar.Add(1)
 		var value YldandmedFileJSON
@@ -95,9 +94,9 @@ func ParseYldandmed(db *gorm.DB, batchSize int) error {
 		for _, majandusaasta := range value.Yldandmed.YldandmedMajandusaastad {
 			majandusaastad = append(majandusaastad, YldandmedMajandusaasta{
 				YldandmedMajandusaastaJSON: majandusaasta,
-				EttevotteID:       value.AriregistriKood,
-				AlgusKpvInt:       utils.Date(majandusaasta.AlgusKpv),
-				LoppKpvInt:        utils.DatePointer(majandusaasta.LoppKpv),
+				EttevotteID:                value.AriregistriKood,
+				AlgusKpvInt:                utils.Date(majandusaasta.AlgusKpv),
+				LoppKpvInt:                 utils.DatePointer(majandusaasta.LoppKpv),
 			})
 		}
 

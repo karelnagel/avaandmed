@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-
-	"github.com/schollz/progressbar/v3"
 	"gorm.io/gorm"
 )
 
@@ -55,7 +53,7 @@ func ParseLihtandmed(db *gorm.DB, batchSize int) error {
 	linesToSkip := 1
 
 	lihtandmed := make([]Lihtandmed, 0, batchSize)
-	bar := progressbar.Default(utils.COMPANIES)
+	bar := utils.NewProgressBar(utils.COMPANIES, "Processing Lihtandmed")
 	for {
 		bar.Add(1)
 		record, err := reader.Read()

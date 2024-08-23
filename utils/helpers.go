@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"fmt"
+	"github.com/schollz/progressbar/v3"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -56,4 +59,27 @@ func ParseInt(v string) int {
 
 func NewUTF8Reader(r io.Reader) io.Reader {
 	return transform.NewReader(r, charmap.ISO8859_1.NewDecoder())
+}
+
+type ProgressBar struct {
+	bar *progressbar.ProgressBar
+}
+
+func NewProgressBar(max int64, description string) *ProgressBar {
+	disable := os.Getenv("DISABLE_PROGRESS")
+	if disable == "true" {
+		fmt.Println(description)
+		return &ProgressBar{
+			bar: nil,
+		}
+	}
+	return &ProgressBar{
+		bar: progressbar.Default(max, description),
+	}
+}
+
+func (p *ProgressBar) Add(n int) {
+	if p.bar != nil {
+		p.bar.Add(n)
+	}
 }

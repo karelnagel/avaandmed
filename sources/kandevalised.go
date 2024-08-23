@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-
-	"github.com/schollz/progressbar/v3"
 	"gorm.io/gorm"
 )
 
@@ -93,7 +91,7 @@ func ParseKandevalised(db *gorm.DB, batchSize int) error {
 
 	kandevalised := make([]KandevalineIsik, 0, batchSize)
 
-	bar := progressbar.Default(utils.COMPANIES)
+	bar := utils.NewProgressBar(utils.COMPANIES, "Processing Kandevalised")
 	for decoder.More() {
 		bar.Add(1)
 		var value KandevalisedJSON

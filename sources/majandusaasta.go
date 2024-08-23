@@ -8,8 +8,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/schollz/progressbar/v3"
 	"gorm.io/gorm"
 )
 
@@ -147,7 +145,7 @@ func ParseMajandusaasta(db *gorm.DB) error {
 
 	majandusaastad := make(map[string]Majandusaasta)
 
-	bar := progressbar.Default(16391306)
+	bar := utils.NewProgressBar(16391306, "Processing Majandusaasta")
 	isFirst := true
 	for {
 		bar.Add(1)

@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-
-	"github.com/schollz/progressbar/v3"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +28,7 @@ func ParseDebt(db *gorm.DB, batchSize int) error {
 	}
 
 	maksuvolad := make([]Maksuvolg, 0, batchSize)
-	bar := progressbar.Default(2930436)
+	bar := utils.NewProgressBar(2930436, "Processing Debt")
 
 	file, _ := os.Open(source.FilePath)
 	defer file.Close()

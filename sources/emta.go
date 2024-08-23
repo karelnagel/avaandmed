@@ -4,7 +4,6 @@ import (
 	"avaandmed/utils"
 	"encoding/csv"
 	"fmt"
-	"github.com/schollz/progressbar/v3"
 	"gorm.io/gorm"
 	"io"
 	"os"
@@ -53,7 +52,7 @@ func ParseEMTA(db *gorm.DB, batchSize int) error {
 	}
 
 	emtas := make([]EMTA, 0, batchSize)
-	bar := progressbar.Default(2930436)
+	bar := utils.NewProgressBar(2930436, "Processing EMTA")
 
 	for _, quarter := range quarters {
 		QUARTERS := []string{"I", "II", "III", "IV"}

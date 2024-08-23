@@ -4,10 +4,8 @@ import (
 	"avaandmed/utils"
 	"encoding/json"
 	"fmt"
-	"os"
-
-	"github.com/schollz/progressbar/v3"
 	"gorm.io/gorm"
+	"os"
 )
 
 type OsanikudJSON struct {
@@ -97,7 +95,7 @@ func ParseOsanikud(db *gorm.DB, batchSize int) error {
 
 	osanikud := make([]Osanik, 0, batchSize)
 
-	bar := progressbar.Default(utils.COMPANIES)
+	bar := utils.NewProgressBar(utils.COMPANIES, "Processing Osanikud")
 	for decoder.More() {
 		bar.Add(1)
 		var value OsanikudJSON
