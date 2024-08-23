@@ -1,7 +1,6 @@
 package main
 
 import (
-	"avaandmed/database"
 	"avaandmed/sources"
 	"flag"
 	"fmt"
@@ -18,7 +17,7 @@ type Args struct {
 }
 
 const DATA_DIR = "data"
-const DEFAULT_SOURCES = "yldandmed,kaardile_kantud,kandevalised,kasusaajad,osanikud"
+const DEFAULT_SOURCES = "yldandmed,kaardile_kantud,kandevalised,kasusaajad,osanikud,majandusaasta"
 
 func main() {
 	// Args
@@ -47,7 +46,7 @@ func main() {
 	// Database
 	os.Remove(args.SQLitePath)
 
-	db, err := database.InitDB(args.SQLitePath)
+	db, err := sources.InitDB(args.SQLitePath)
 	if err != nil {
 		panic(fmt.Errorf("failed to connect database: %w", err))
 	}
@@ -57,15 +56,17 @@ func main() {
 		fmt.Printf("Processing source %s\n", source)
 		switch source {
 		case "yldandmed":
-			err = sources.Yldandmed(db, args.BatchSize)
+			err = sources.ParseYldandmed(db, args.BatchSize)
 		case "kaardile_kantud":
-			err = sources.KaardileKantud(db, args.BatchSize)
+			err = sources.ParseKaardileKantud(db, args.BatchSize)
 		case "kandevalised":
-			err = sources.Kandevalised(db, args.BatchSize)
+			err = sources.ParseKandevalised(db, args.BatchSize)
 		case "kasusaajad":
-			err = sources.Kasusaajad(db, args.BatchSize)
+			err = sources.ParseKasusaajad(db, args.BatchSize)
 		case "osanikud":
-			err = sources.Osanikud(db, args.BatchSize)
+			err = sources.ParseOsanikud(db, args.BatchSize)
+		case "majandusaasta":
+			err = sources.ParseMajandusaasta(db)
 		default:
 			err = fmt.Errorf("unknown source: %s", source)
 		}

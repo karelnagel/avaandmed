@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+const COMPANIES = 346698
 const dateFormat = "02.01.2006"
 
 func Date(v interface{}) int64 {

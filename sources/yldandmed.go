@@ -1,7 +1,6 @@
 package sources
 
 import (
-	"avaandmed/database"
 	"avaandmed/utils"
 	"encoding/json"
 	"fmt"
@@ -10,32 +9,18 @@ import (
 	"os"
 )
 
-func Yldandmed(db *gorm.DB, batchSize int) error {
-	const (
-		url       = "https://avaandmed.ariregister.rik.ee/sites/default/files/avaandmed/ettevotja_rekvisiidid__yldandmed.json.zip"
-		fileName  = "data/ettevotja_rekvisiidid__yldandmed.zip"
-		jsonFile  = "data/ettevotja_rekvisiidid__yldandmed.json"
-		companies = 346698
-	)
-
-	// Downloading
-	if _, err := os.Stat(jsonFile); os.IsNotExist(err) {
-		fmt.Println("File does not exist, downloading")
-		err := utils.DownloadFile(url, fileName)
-		if err != nil {
-			return fmt.Errorf("error downloading: %w", err)
-		}
-		fmt.Println("File downloaded")
-
-		err = utils.Unzip(fileName)
-		if err != nil {
-			return fmt.Errorf("error unzipping: %w", err)
-		}
-		fmt.Println("File unzipped")
+func ParseYldandmed(db *gorm.DB, batchSize int) error {
+	source := utils.Source{
+		URL:      "https://avaandmed.ariregister.rik.ee/sites/default/files/avaandmed/ettevotja_rekvisiidid__yldandmed.json.zip",
+		ZipPath:  "data/ettevotja_rekvisiidid__yldandmed.json.zip",
+		FilePath: "data/ettevotja_rekvisiidid__yldandmed.json",
+	}
+	err := source.Download()
+	if err != nil {
+		return fmt.Errorf("error downloading: %w", err)
 	}
 
-	// Opening file
-	file, err := os.Open(jsonFile)
+	file, err := os.Open(source.FilePath)
 	if err != nil {
 		return fmt.Errorf("error opening file: %v", err)
 	}
@@ -48,30 +33,30 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 		return fmt.Errorf("error reading opening bracket: %v", err)
 	}
 
-	yldandmed := make([]database.Yldandmed, 0, batchSize)
-	aadressid := make([]database.Aadress, 0, batchSize)
-	arinimed := make([]database.Arinimi, 0, batchSize)
-	kapitalid := make([]database.Kapital, 0, batchSize)
-	majandusaastad := make([]database.Majandusaasta, 0, batchSize)
-	markusedKaardil := make([]database.MarkusKaardil, 0, batchSize)
-	oiguslikudVormid := make([]database.OiguslikVorm, 0, batchSize)
-	sidevahendid := make([]database.Sidevahend, 0, batchSize)
-	staatused := make([]database.Staatus, 0, batchSize)
-	teatatudTegevusalad := make([]database.TeatatudTegevusala, 0, batchSize)
-	pohikirjad := make([]database.Pohikiri, 0, batchSize)
-	infoMajandusaastaAruannetest := make([]database.InfoMajandusaastaAruandest, 0, batchSize)
+	yldandmed := make([]Yldandmed, 0, batchSize)
+	aadressid := make([]Aadress, 0, batchSize)
+	arinimed := make([]Arinimi, 0, batchSize)
+	kapitalid := make([]Kapital, 0, batchSize)
+	majandusaastad := make([]YldandmedMajandusaasta, 0, batchSize)
+	markusedKaardil := make([]MarkusKaardil, 0, batchSize)
+	oiguslikudVormid := make([]OiguslikVorm, 0, batchSize)
+	sidevahendid := make([]Sidevahend, 0, batchSize)
+	staatused := make([]Staatus, 0, batchSize)
+	teatatudTegevusalad := make([]TeatatudTegevusala, 0, batchSize)
+	pohikirjad := make([]Pohikiri, 0, batchSize)
+	infoMajandusaastaAruannetest := make([]InfoMajandusaastaAruandest, 0, batchSize)
 
-	bar := progressbar.Default(companies)
+	bar := progressbar.Default(utils.COMPANIES)
 
 	for decoder.More() {
 		bar.Add(1)
-		var value database.YldandmedFileJSON
+		var value YldandmedFileJSON
 		err := decoder.Decode(&value)
 		if err != nil {
 			return fmt.Errorf("error decoding JSON: %v", err)
 		}
 
-		yldandmed = append(yldandmed, database.Yldandmed{
+		yldandmed = append(yldandmed, Yldandmed{
 			YldandmedJSON:                 value.Yldandmed.YldandmedJSON,
 			EttevotteID:                   value.AriregistriKood,
 			Nimi:                          value.Nimi,
@@ -81,7 +66,7 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 		})
 
 		for _, aadress := range value.Yldandmed.Aadressid {
-			aadressid = append(aadressid, database.Aadress{
+			aadressid = append(aadressid, Aadress{
 				AadressJSON: aadress,
 				EttevotteID: value.AriregistriKood,
 				AlgusKpvInt: utils.Date(aadress.AlgusKpv),
@@ -90,7 +75,7 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 		}
 
 		for _, arinimi := range value.Yldandmed.Arinimed {
-			arinimed = append(arinimed, database.Arinimi{
+			arinimed = append(arinimed, Arinimi{
 				ArinimiJSON: arinimi,
 				EttevotteID: value.AriregistriKood,
 				AlgusKpvInt: utils.Date(arinimi.AlgusKpv),
@@ -99,7 +84,7 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 		}
 
 		for _, kapital := range value.Yldandmed.Kapitalid {
-			kapitalid = append(kapitalid, database.Kapital{
+			kapitalid = append(kapitalid, Kapital{
 				KapitalJSON: kapital,
 				EttevotteID: value.AriregistriKood,
 				AlgusKpvInt: utils.Date(kapital.AlgusKpv),
@@ -107,9 +92,9 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 			})
 		}
 
-		for _, majandusaasta := range value.Yldandmed.Majandusaastad {
-			majandusaastad = append(majandusaastad, database.Majandusaasta{
-				MajandusaastaJSON: majandusaasta,
+		for _, majandusaasta := range value.Yldandmed.YldandmedMajandusaastad {
+			majandusaastad = append(majandusaastad, YldandmedMajandusaasta{
+				YldandmedMajandusaastaJSON: majandusaasta,
 				EttevotteID:       value.AriregistriKood,
 				AlgusKpvInt:       utils.Date(majandusaasta.AlgusKpv),
 				LoppKpvInt:        utils.DatePointer(majandusaasta.LoppKpv),
@@ -117,7 +102,7 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 		}
 
 		for _, pohikiri := range value.Yldandmed.Pohikirjad {
-			pohikirjad = append(pohikirjad, database.Pohikiri{
+			pohikirjad = append(pohikirjad, Pohikiri{
 				PohikiriJSON: pohikiri,
 				EttevotteID:  value.AriregistriKood,
 				AlgusKpvInt:  utils.Date(pohikiri.AlgusKpv),
@@ -126,7 +111,7 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 		}
 
 		for _, staatus := range value.Yldandmed.Staatused {
-			staatused = append(staatused, database.Staatus{
+			staatused = append(staatused, Staatus{
 				StaatusJSON: staatus,
 				EttevotteID: value.AriregistriKood,
 				AlgusKpvInt: utils.Date(staatus.AlgusKpv),
@@ -134,7 +119,7 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 		}
 
 		for _, teatatudTegevusala := range value.Yldandmed.TeatatudTegevusalad {
-			teatatudTegevusalad = append(teatatudTegevusalad, database.TeatatudTegevusala{
+			teatatudTegevusalad = append(teatatudTegevusalad, TeatatudTegevusala{
 				TeatatudTegevusalaJSON: teatatudTegevusala,
 				EttevotteID:            value.AriregistriKood,
 				AlgusKpvInt:            utils.Date(teatatudTegevusala.AlgusKpv),
@@ -143,7 +128,7 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 		}
 
 		for _, info := range value.Yldandmed.InfoMajandusaastaAruandestJSON {
-			infoMajandusaastaAruannetest = append(infoMajandusaastaAruannetest, database.InfoMajandusaastaAruandest{
+			infoMajandusaastaAruannetest = append(infoMajandusaastaAruannetest, InfoMajandusaastaAruandest{
 				InfoMajandusaastaAruandestJSON:  info,
 				EttevotteID:                     value.AriregistriKood,
 				MajandusaastaPeriodiAlgusKpvInt: utils.Date(info.MajandusaastaPeriodiAlgusKpv),
@@ -151,32 +136,32 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 			})
 		}
 
-		database.InsertBatch(db, &yldandmed, batchSize)
-		database.InsertBatch(db, &aadressid, batchSize)
-		database.InsertBatch(db, &arinimed, batchSize)
-		database.InsertBatch(db, &kapitalid, batchSize)
-		database.InsertBatch(db, &majandusaastad, batchSize)
-		database.InsertBatch(db, &markusedKaardil, batchSize)
-		database.InsertBatch(db, &oiguslikudVormid, batchSize)
-		database.InsertBatch(db, &sidevahendid, batchSize)
-		database.InsertBatch(db, &staatused, batchSize)
-		database.InsertBatch(db, &teatatudTegevusalad, batchSize)
-		database.InsertBatch(db, &pohikirjad, batchSize)
-		database.InsertBatch(db, &infoMajandusaastaAruannetest, batchSize)
+		InsertBatch(db, &yldandmed, batchSize)
+		InsertBatch(db, &aadressid, batchSize)
+		InsertBatch(db, &arinimed, batchSize)
+		InsertBatch(db, &kapitalid, batchSize)
+		InsertBatch(db, &majandusaastad, batchSize)
+		InsertBatch(db, &markusedKaardil, batchSize)
+		InsertBatch(db, &oiguslikudVormid, batchSize)
+		InsertBatch(db, &sidevahendid, batchSize)
+		InsertBatch(db, &staatused, batchSize)
+		InsertBatch(db, &teatatudTegevusalad, batchSize)
+		InsertBatch(db, &pohikirjad, batchSize)
+		InsertBatch(db, &infoMajandusaastaAruannetest, batchSize)
 	}
 
-	database.InsertAll(db, &yldandmed)
-	database.InsertAll(db, &aadressid)
-	database.InsertAll(db, &arinimed)
-	database.InsertAll(db, &kapitalid)
-	database.InsertAll(db, &majandusaastad)
-	database.InsertAll(db, &markusedKaardil)
-	database.InsertAll(db, &oiguslikudVormid)
-	database.InsertAll(db, &sidevahendid)
-	database.InsertAll(db, &staatused)
-	database.InsertAll(db, &teatatudTegevusalad)
-	database.InsertAll(db, &pohikirjad)
-	database.InsertAll(db, &infoMajandusaastaAruannetest)
+	InsertAll(db, &yldandmed)
+	InsertAll(db, &aadressid)
+	InsertAll(db, &arinimed)
+	InsertAll(db, &kapitalid)
+	InsertAll(db, &majandusaastad)
+	InsertAll(db, &markusedKaardil)
+	InsertAll(db, &oiguslikudVormid)
+	InsertAll(db, &sidevahendid)
+	InsertAll(db, &staatused)
+	InsertAll(db, &teatatudTegevusalad)
+	InsertAll(db, &pohikirjad)
+	InsertAll(db, &infoMajandusaastaAruannetest)
 
 	_, err = decoder.Token()
 	if err != nil {

@@ -1,7 +1,8 @@
-package database
+package sources
 
 import (
 	"fmt"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -16,7 +17,7 @@ func InitDB(path string) (*gorm.DB, error) {
 	db.AutoMigrate(&Aadress{})
 	db.AutoMigrate(&Arinimi{})
 	db.AutoMigrate(&Kapital{})
-	db.AutoMigrate(&Majandusaasta{})
+	db.AutoMigrate(&YldandmedMajandusaasta{})
 	db.AutoMigrate(&MarkusKaardil{})
 	db.AutoMigrate(&OiguslikVorm{})
 	db.AutoMigrate(&Sidevahend{})
@@ -32,6 +33,8 @@ func InitDB(path string) (*gorm.DB, error) {
 	db.AutoMigrate(&Kasusaaja{})
 
 	db.AutoMigrate(&Osanik{})
+
+	db.AutoMigrate(&Majandusaasta{})
 
 	return db, nil
 }
@@ -65,8 +68,8 @@ func (Arinimi) TableName() string {
 func (Kapital) TableName() string {
 	return "kapitalid"
 }
-func (Majandusaasta) TableName() string {
-	return "majandusaastad"
+func (YldandmedMajandusaasta) TableName() string {
+	return "yldandmed_majandusaastad"
 }
 func (MarkusKaardil) TableName() string {
 	return "markused_kaardil"
@@ -100,4 +103,7 @@ func (Kasusaaja) TableName() string {
 }
 func (Osanik) TableName() string {
 	return "osanikud"
+}
+func (Majandusaasta) TableName() string {
+	return "majandusaastad"
 }

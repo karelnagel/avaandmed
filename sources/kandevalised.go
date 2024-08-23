@@ -1,7 +1,6 @@
 package sources
 
 import (
-	"avaandmed/database"
 	"avaandmed/utils"
 	"encoding/json"
 	"fmt"
@@ -11,30 +10,75 @@ import (
 	"gorm.io/gorm"
 )
 
-func Kandevalised(db *gorm.DB, batchSize int) error {
-	const (
-		url       = "https://avaandmed.ariregister.rik.ee/sites/default/files/avaandmed/ettevotja_rekvisiidid__kandevalised_isikud.json.zip"
-		fileName  = "data/ettevotja_rekvisiidid__kandevalised_isikud.json.zip"
-		jsonFile  = "data/ettevotja_rekvisiidid__kandevalised_isikud.json"
-		companies = 345930
-	)
-	// Downloading
-	if _, err := os.Stat(jsonFile); os.IsNotExist(err) {
-		fmt.Println("File does not exist, downloading")
-		err := utils.DownloadFile(url, fileName)
-		if err != nil {
-			return fmt.Errorf("error downloading: %w", err)
-		}
-		fmt.Println("File downloaded")
+type KandevalisedJSON struct {
+	AriregistriKood     int64                 `json:"ariregistri_kood"`
+	Nimi                string                `json:"nimi"`
+	KaardivalisedIsikud []KandevalineIsikJSON `json:"kaardivalised_isikud"`
+}
 
-		err = utils.Unzip(fileName)
-		if err != nil {
-			return fmt.Errorf("error unzipping: %w", err)
-		}
-		fmt.Println("File unzipped")
+type KandevalineIsikJSON struct {
+	KirjeID                                          int64   `json:"kirje_id"`
+	IsikuTyyp                                        string  `json:"isiku_tyyp"`
+	IsikuRoll                                        string  `json:"isiku_roll"`
+	IsikuRollTekstina                                string  `json:"isiku_roll_tekstina"`
+	Eesnimi                                          string  `json:"eesnimi"`
+	NimiArinimi                                      string  `json:"nimi_arinimi"`
+	IsikukoodRegistrikood                            string  `json:"isikukood_registrikood"`
+	ValisKood                                        *string `json:"valis_kood"`
+	ValisKoodRiikTekstina                            *string `json:"valis_kood_riik_tekstina"`
+	ValisKoodRiik                                    *string `json:"valis_kood_riik"`
+	Synniaeg                                         *string `json:"synniaeg"`
+	AadressRiik                                      string  `json:"aadress_riik"`
+	AadressRiikTekstina                              string  `json:"aadress_riik_tekstina"`
+	AadressEhak                                      *string `json:"aadress_ehak"`
+	AadressEhakTekstina                              string  `json:"aadress_ehak_tekstina"`
+	AadressTanavMajaKorter                           *string `json:"aadress_tanav_maja_korter"`
+	OsaluseProtsent                                  *string `json:"osaluse_protsent"`
+	OsaluseSuurus                                    string  `json:"osaluse_suurus"`
+	OsaluseValuuta                                   string  `json:"osaluse_valuuta"`
+	OsamaksuValuutaTekstina                          string  `json:"osamaksu_valuuta_tekstina"`
+	OsaluseOmandiliik                                string  `json:"osaluse_omandiliik"`
+	OsaluseOmandiliikTekstina                        string  `json:"osaluse_omandiliik_tekstina"`
+	OsaluseMurdosaLugeja                             *string `json:"osaluse_murdosa_lugeja"`
+	OsaluseMurdosaNimetaja                           *string `json:"osaluse_murdosa_nimetaja"`
+	VolitusteLoppemiseKpv                            string  `json:"volituste_loppemise_kpv"`
+	KontrolliAllikas                                 string  `json:"kontrolli_allikas"`
+	KontrolliAllikasTekstina                         string  `json:"kontrolli_allikas_tekstina"`
+	KontrolliAllikaKpv                               string  `json:"kontrolli_allika_kpv"`
+	AlgusKpv                                         string  `json:"algus_kpv"`
+	LoppKpv                                          *string `json:"lopp_kpv"`
+	Grupp                                            *string `json:"grupp"`
+	AadressAdsAdrID                                  *int64  `json:"aadress_ads__adr_id"`
+	AadressAdsAdsOid                                 *string `json:"adress_ads__ads_oid"`
+	AadressAdsAdsNormaliseeritudTaisaadress          *string `json:"aadress_ads__ads_normaliseeritud_taisaadress"`
+	AadressAdsAdsNormaliseeritudTaisaadressTapsustus *string `json:"aadress_ads__ads_normaliseeritud_taisaadress_tapsustus"`
+	AadressAdsKoodaadress                            *string `json:"aadress_ads__koodaadress"`
+	AadressAdsAdobID                                 *string `json:"aadress_ads__adob_id"`
+	AadressAdsTyyp                                   *string `json:"aadress_ads__tyyp"`
+}
+
+type KandevalineIsik struct {
+	ID                       int `gorm:"primarykey"`
+	EttevotteID              int64
+	AlgusKpvInt              int64
+	LoppKpvInt               *int64
+	VolitusteLoppemiseKpvInt *int64
+	KontrolliAllikaKpvInt    *int64
+	KandevalineIsikJSON
+}
+
+func ParseKandevalised(db *gorm.DB, batchSize int) error {
+	source := utils.Source{
+		URL:      "https://avaandmed.ariregister.rik.ee/sites/default/files/avaandmed/ettevotja_rekvisiidid__kandevalised_isikud.json.zip",
+		ZipPath:  "data/ettevotja_rekvisiidid__kandevalised_isikud.json.zip",
+		FilePath: "data/ettevotja_rekvisiidid__kandevalised_isikud.json",
+	}
+	err := source.Download()
+	if err != nil {
+		return fmt.Errorf("error downloading: %w", err)
 	}
 
-	file, err := os.Open(jsonFile)
+	file, err := os.Open(source.FilePath)
 	if err != nil {
 		return fmt.Errorf("error opening file: %v", err)
 	}
@@ -47,15 +91,15 @@ func Kandevalised(db *gorm.DB, batchSize int) error {
 		return fmt.Errorf("error reading opening bracket: %v", err)
 	}
 
-	kandevalised := make([]database.KandevalineIsik, 0, batchSize)
+	kandevalised := make([]KandevalineIsik, 0, batchSize)
 
-	bar := progressbar.Default(companies)
+	bar := progressbar.Default(utils.COMPANIES)
 	for decoder.More() {
 		bar.Add(1)
-		var value database.KandevalisedJSON
+		var value KandevalisedJSON
 		decoder.Decode(&value)
 		for _, isik := range value.KaardivalisedIsikud {
-			kandevalised = append(kandevalised, database.KandevalineIsik{
+			kandevalised = append(kandevalised, KandevalineIsik{
 				KandevalineIsikJSON:      isik,
 				EttevotteID:              value.AriregistriKood,
 				AlgusKpvInt:              utils.Date(isik.AlgusKpv),
@@ -64,9 +108,9 @@ func Kandevalised(db *gorm.DB, batchSize int) error {
 				KontrolliAllikaKpvInt:    utils.DatePointer(&isik.KontrolliAllikaKpv),
 			})
 		}
-		database.InsertBatch(db, &kandevalised, batchSize)
+		InsertBatch(db, &kandevalised, batchSize)
 	}
-	database.InsertAll(db, &kandevalised)
+	InsertAll(db, &kandevalised)
 
 	_, err = decoder.Token()
 	if err != nil {

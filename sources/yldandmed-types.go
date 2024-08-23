@@ -1,4 +1,4 @@
-package database
+package sources
 
 type YldandmedFileJSON struct {
 	AriregistriKood int64                     `json:"ariregistri_kood"`
@@ -37,7 +37,7 @@ type YldandmedWithChildrenJSON struct {
 	Aadressid                      []AadressJSON                    `json:"aadressid"`
 	OiguslikudVormid               []OiguslikVormJSON               `json:"oiguslikud_vormid"`
 	Kapitalid                      []KapitalJSON                    `json:"kapitalid"`
-	Majandusaastad                 []MajandusaastaJSON              `json:"majandusaastad"`
+	YldandmedMajandusaastad        []YldandmedMajandusaastaJSON     `json:"majandusaastad"`
 	Pohikirjad                     []PohikiriJSON                   `json:"pohikirjad"`
 	MarkusedKaardil                []MarkusKaardilJSON              `json:"markused_kaardil"`
 	Sidevahendid                   []SidevahendJSON                 `json:"sidevahendid"`
@@ -154,7 +154,7 @@ type Kapital struct {
 	LoppKpvInt  *int64
 }
 
-type MajandusaastaJSON struct {
+type YldandmedMajandusaastaJSON struct {
 	KirjeID        int64   `json:"kirje_id"`
 	KaardiPiirkond int     `json:"kaardi_piirkond"`
 	KaardiNr       int     `json:"kaardi_nr"`
@@ -165,8 +165,8 @@ type MajandusaastaJSON struct {
 	AlgusKpv       string  `json:"algus_kpv"`
 	LoppKpv        *string `json:"lopp_kpv"`
 }
-type Majandusaasta struct {
-	MajandusaastaJSON
+type YldandmedMajandusaasta struct {
+	YldandmedMajandusaastaJSON
 	EttevotteID int64 `gorm:"primarykey"`
 	AlgusKpvInt int64
 	LoppKpvInt  *int64
