@@ -31,6 +31,8 @@ func InitDB(path string) (*gorm.DB, error) {
 
 	db.AutoMigrate(&Kasusaaja{})
 
+	db.AutoMigrate(&Osanik{})
+
 	return db, nil
 }
 
@@ -95,4 +97,7 @@ func (KandevalineIsik) TableName() string {
 }
 func (Kasusaaja) TableName() string {
 	return "kasusaajad"
+}
+func (Osanik) TableName() string {
+	return "osanikud"
 }
