@@ -14,17 +14,24 @@ type Source struct {
 func (f *Source) Download() error {
 	if _, err := os.Stat(f.FilePath); os.IsNotExist(err) {
 		fmt.Printf("File %s does not exist, downloading\n", f.FilePath)
-		err := DownloadFile(f.URL, f.ZipPath)
-		if err != nil {
-			return fmt.Errorf("error downloading: %w", err)
+
+		if f.ZipPath == "" {
+			err := DownloadFile(f.URL, f.FilePath)
+			if err != nil {
+				return fmt.Errorf("error downloading: %w", err)
+			}
+		} else {
+			err := DownloadFile(f.URL, f.ZipPath)
+			if err != nil {
+				return fmt.Errorf("error downloading: %w", err)
+			}
+
+			err = Unzip(f.ZipPath)
+			if err != nil {
+				return fmt.Errorf("error unzipping: %w", err)
+			}
 		}
 		fmt.Println("File downloaded")
-
-		err = Unzip(f.ZipPath)
-		if err != nil {
-			return fmt.Errorf("error unzipping: %w", err)
-		}
-		fmt.Println("File unzipped")
 	}
 	return nil
 }

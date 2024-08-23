@@ -17,13 +17,14 @@ type Args struct {
 }
 
 const DATA_DIR = "data"
-const DEFAULT_SOURCES = "yldandmed,kaardile_kantud,kandevalised,kasusaajad,osanikud,majandusaasta"
+const DEFAULT_SOURCES = "yldandmed,kaardile_kantud,kandevalised,kasusaajad,osanikud,majandusaasta,emta"
 
 func main() {
 	// Args
+	total := time.Now()
 	args := Args{}
 	flag.StringVar(&args.SQLitePath, "sqlite", "data/out.db", "Path to the SQLite database")
-	flag.IntVar(&args.BatchSize, "batch", 800, "Batch size")
+	flag.IntVar(&args.BatchSize, "batch", 600, "Batch size")
 	flag.BoolVar(&args.DeleteDataDir, "delete", false, "Delete data directory")
 	srcs := flag.String("sources", DEFAULT_SOURCES, "Sources to process (comma separated), default: "+DEFAULT_SOURCES)
 
@@ -67,6 +68,8 @@ func main() {
 			err = sources.ParseOsanikud(db, args.BatchSize)
 		case "majandusaasta":
 			err = sources.ParseMajandusaasta(db)
+		case "emta":
+			err = sources.ParseEMTA(db, args.BatchSize)
 		default:
 			err = fmt.Errorf("unknown source: %s", source)
 		}
@@ -77,4 +80,5 @@ func main() {
 			fmt.Printf("Source %s finished in %s\n", source, time.Since(t))
 		}
 	}
+	fmt.Printf("Total time: %s\n", time.Since(total))
 }
