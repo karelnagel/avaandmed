@@ -23,7 +23,7 @@ func main() {
 	// Args
 	total := time.Now()
 	args := Args{}
-	flag.StringVar(&args.SQLitePath, "sqlite", "data/out.db", "Path to the SQLite database")
+	flag.StringVar(&args.SQLitePath, "sqlite", "out.db", "Path to the SQLite database")
 	flag.IntVar(&args.BatchSize, "batch", 600, "Batch size")
 	flag.BoolVar(&args.DeleteDataDir, "delete", false, "Delete data directory")
 	srcs := flag.String("sources", DEFAULT_SOURCES, "Sources to process (comma separated), default: "+DEFAULT_SOURCES)

@@ -54,7 +54,6 @@ func ParseDebt(db *gorm.DB, batchSize int) error {
 			continue
 		}
 
-		fmt.Println(record)
 		if err != nil {
 			return fmt.Errorf("error reading CSV record: %v", err)
 		}
