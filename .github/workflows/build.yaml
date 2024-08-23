@@ -2,8 +2,8 @@ name: Daily Build and Release
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs every day at midnight UTC
-  workflow_dispatch: 
+    - cron: "0 0 * * *" # Runs every day at midnight UTC
+  workflow_dispatch:
 
 jobs:
   build-and-release:
@@ -15,13 +15,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.23'  # Adjust this to your Go version
+          go-version: "1.23"
 
       - name: Install dependencies
         run: go mod download
 
       - name: Run Go app
-        run: go run main.go --sources=debt   # Adjust this to your app's entry point
+        run: go run main.go --sources=kaardile_kantud,kandevalised,kasusaajad,osanikud,majandusaasta,emta,debt,lihtandmed
 
       - name: Compress output
         run: gzip out.db
@@ -30,10 +30,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          tag_name="release-${{ github.run_number }}"
-          release_name="Daily Release ${{ github.run_number }}"
-          
-          gh release create "$tag_name" \
-            --title "$release_name" \
-            --notes "Automated daily release" \
+          gh release create "latest" \
+            --title "Avaandmed" \
+            --notes "Eesti ettevotete avaandmed" \
             out.db.gz

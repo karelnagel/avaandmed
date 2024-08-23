@@ -80,7 +80,9 @@ func main() {
 		}
 
 		if err != nil {
-			panic(fmt.Errorf("source %s failed: %w", source, err))
+			// Disabled panic for now
+			fmt.Printf("Source %s failed: %s\n", source, err)
+			// panic(fmt.Errorf("source %s failed: %w", source, err))
 		} else {
 			fmt.Printf("Source %s finished in %s\n", source, time.Since(t))
 		}
