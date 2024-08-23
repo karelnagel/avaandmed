@@ -18,7 +18,7 @@ type Args struct {
 }
 
 const DATA_DIR = "data"
-const DEFAULT_SOURCES = "yldandmed,kaardile_kantud"
+const DEFAULT_SOURCES = "yldandmed,kaardile_kantud,kandevalised"
 
 func main() {
 	// Args
@@ -60,6 +60,8 @@ func main() {
 			err = sources.Yldandmed(db, args.BatchSize)
 		case "kaardile_kantud":
 			err = sources.KaardileKantud(db, args.BatchSize)
+		case "kandevalised":
+			err = sources.Kandevalised(db, args.BatchSize)
 		default:
 			err = fmt.Errorf("unknown source: %s", source)
 		}
