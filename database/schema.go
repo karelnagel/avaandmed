@@ -4,6 +4,7 @@ type Tabler interface {
 	TableName() string
 }
 
+// Yldandmed
 type Ettevote struct {
 	ID                            int64 `gorm:"primarykey"`
 	Nimi                          string
@@ -218,3 +219,5 @@ type Pohikiri struct {
 func (Pohikiri) TableName() string {
 	return "pohikirjad"
 }
+
+// Kaardile Kantud

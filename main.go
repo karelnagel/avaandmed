@@ -17,7 +17,7 @@ type Args struct {
 }
 
 const DATA_DIR = "data"
-const DEFAULT_SOURCES = "yldandmed"
+const DEFAULT_SOURCES = "yldandmed,kaardile_kantud"
 
 func main() {
 	// Args
@@ -52,14 +52,21 @@ func main() {
 	}
 
 	for _, source := range args.Sources {
+		fmt.Printf("Processing source %s\n", source)
+
 		switch source {
 		case "yldandmed":
 			err = sources.Yldandmed(db, args.BatchSize)
-			if err != nil {
-				panic(fmt.Errorf("yldandmed failed: %w", err))
-			}
+		case "kaardile_kantud":
+			err = sources.KaardileKantud(db, args.BatchSize)
 		default:
-			panic(fmt.Errorf("unknown source: %s", source))
+			err = fmt.Errorf("unknown source: %s", source)
+		}
+
+		if err != nil {
+			panic(fmt.Errorf("source %s failed: %w", source, err))
+		} else {
+			fmt.Printf("Source %s finished\n", source)
 		}
 	}
 }

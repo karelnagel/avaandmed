@@ -5,10 +5,9 @@ import (
 	"avaandmed/utils"
 	"encoding/json"
 	"fmt"
-	"os"
-	"time"
-
+	"github.com/schollz/progressbar/v3"
 	"gorm.io/gorm"
+	"os"
 )
 
 func parse[T any](
@@ -26,13 +25,13 @@ func parse[T any](
 	}
 }
 
-const (
-	url      = "https://avaandmed.ariregister.rik.ee/sites/default/files/avaandmed/ettevotja_rekvisiidid__yldandmed.json.zip"
-	fileName = "data/downloaded_file.zip"
-	jsonFile = "data/ettevotja_rekvisiidid__yldandmed.json"
-)
-
 func Yldandmed(db *gorm.DB, batchSize int) error {
+	const (
+		url       = "https://avaandmed.ariregister.rik.ee/sites/default/files/avaandmed/ettevotja_rekvisiidid__yldandmed.json.zip"
+		fileName  = "data/ettevotja_rekvisiidid__yldandmed.zip"
+		jsonFile  = "data/ettevotja_rekvisiidid__yldandmed.json"
+		companies = 400_000
+	)
 
 	// Downloading
 	if _, err := os.Stat(jsonFile); os.IsNotExist(err) {
@@ -64,8 +63,6 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 		return fmt.Errorf("error reading opening bracket: %v", err)
 	}
 
-	i := 0
-	t := time.Now()
 	ettevotted := make([]database.Ettevote, 0, batchSize)
 	aadressid := make([]database.Aadress, 0, batchSize)
 	arinimed := make([]database.Arinimi, 0, batchSize)
@@ -78,7 +75,10 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 	teatatudTegevusalad := make([]database.TeatatudTegevusala, 0, batchSize)
 	pohikirjad := make([]database.Pohikiri, 0, batchSize)
 
+	bar := progressbar.Default(companies)
+
 	for decoder.More() {
+		bar.Add(1)
 		var value map[string]interface{}
 		err := decoder.Decode(&value)
 		if err != nil {
@@ -278,12 +278,6 @@ func Yldandmed(db *gorm.DB, batchSize int) error {
 				SisaldabErioigusi: utils.BoolPointer(pohikiri["sisaldab_erioigusi"]),
 			}
 		})
-
-		if len(ettevotted) == batchSize {
-			i++
-			fmt.Printf("Count %d, time: %d \n", i*batchSize, time.Since(t).Milliseconds())
-			t = time.Now()
-		}
 
 		database.InsertBatch(db, &ettevotted, batchSize)
 		database.InsertBatch(db, &aadressid, batchSize)
