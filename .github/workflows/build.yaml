@@ -30,7 +30,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "latest" \
-            --title "Avaandmed" \
-            --notes "Eesti ettevotete avaandmed" \
+          tag_name="release-${{ github.run_number }}"
+          release_name="Estonian Companies Data $(date +'%Y-%m-%d %H-%M')"
+
+          gh release create "$tag_name" \
+            --title "$release_name" \
+            --notes "Latest data about Estonian companies" \
             out.db.gz
