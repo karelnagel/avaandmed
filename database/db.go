@@ -29,6 +29,8 @@ func InitDB(path string) (*gorm.DB, error) {
 
 	db.AutoMigrate(&KandevalineIsik{})
 
+	db.AutoMigrate(&Kasusaaja{})
+
 	return db, nil
 }
 
@@ -90,4 +92,7 @@ func (KaardileKantudIsik) TableName() string {
 }
 func (KandevalineIsik) TableName() string {
 	return "kandevalised_isikud"
+}
+func (Kasusaaja) TableName() string {
+	return "kasusaajad"
 }

@@ -2,3 +2,5 @@ data/
 *.db
 *.db-journal
 .DS_Store
+
+*.json
