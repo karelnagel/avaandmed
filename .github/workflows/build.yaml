@@ -26,23 +26,14 @@ jobs:
       - name: Compress output
         run: gzip out.db
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Create Release and Upload Asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}-${{ github.run_number }}
-          release_name: Daily Release ${{ github.run_number }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./out.db.gz
-          asset_name: out.db.gz
-          asset_content_type: application/gzip
+        run: |
+          tag_name="release-${{ github.run_number }}"
+          release_name="Daily Release ${{ github.run_number }}"
+          
+          gh release create "$tag_name" \
+            --title "$release_name" \
+            --notes "Automated daily release" \
+            out.db.gz
