@@ -17,7 +17,7 @@ type Args struct {
 }
 
 const DATA_DIR = "data"
-const DEFAULT_SOURCES = "yldandmed,kaardile_kantud,kandevalised,kasusaajad,osanikud,majandusaasta,emta"
+const DEFAULT_SOURCES = "yldandmed,kaardile_kantud,kandevalised,kasusaajad,osanikud,majandusaasta,emta,debt"
 
 func main() {
 	// Args
@@ -70,6 +70,9 @@ func main() {
 			err = sources.ParseMajandusaasta(db)
 		case "emta":
 			err = sources.ParseEMTA(db, args.BatchSize)
+		case "debt":
+			err = sources.ParseDebt(db, args.BatchSize)
+
 		default:
 			err = fmt.Errorf("unknown source: %s", source)
 		}

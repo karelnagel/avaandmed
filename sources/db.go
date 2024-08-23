@@ -38,6 +38,8 @@ func InitDB(path string) (*gorm.DB, error) {
 
 	db.AutoMigrate(&EMTA{})
 
+	db.AutoMigrate(&Maksuvolg{})
+
 	return db, nil
 }
 
@@ -111,4 +113,7 @@ func (Majandusaasta) TableName() string {
 }
 func (EMTA) TableName() string {
 	return "emta"
+}
+func (Maksuvolg) TableName() string {
+	return "maksuvolg"
 }

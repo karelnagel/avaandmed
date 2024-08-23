@@ -12,7 +12,6 @@ import (
 
 type EMTA struct {
 	EttevotteID                           string `gorm:"primaryKey"`
-	Nimi                                  string
 	Liik                                  string
 	RegistreeritudKaibemaksukohustuslaste string
 	EMTAKTegevusvaldkond                  string
@@ -96,7 +95,6 @@ func ParseEMTA(db *gorm.DB, batchSize int) error {
 
 			emtas = append(emtas, EMTA{
 				EttevotteID:                           record[0],
-				Nimi:                                  record[1],
 				Liik:                                  record[2],
 				RegistreeritudKaibemaksukohustuslaste: record[3],
 				EMTAKTegevusvaldkond:                  record[4],
