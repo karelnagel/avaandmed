@@ -4,39 +4,39 @@ import (
 	"avaandmed/utils"
 	"encoding/json"
 	"fmt"
-	"os"
 	"gorm.io/gorm"
+	"os"
 )
 
 type KasusaajadJSON struct {
-	AriregistriKood int64         `json:"ariregistri_kood"`
-	Nimi            string        `json:"nimi"`
+	AriregistriKood int64           `json:"ariregistri_kood"`
+	Nimi            string          `json:"nimi"`
 	Kasusaajad      []KasusaajaJSON `json:"kasusaajad"`
 }
 
 type KasusaajaJSON struct {
-	KirjeID                       int64   `json:"kirje_id"`
-	AlgusKpv                      string  `json:"algus_kpv"`
-	LoppKpv                       *string `json:"lopp_kpv"`
-	Eesnimi                       string  `json:"eesnimi"`
-	Nimi                          string  `json:"nimi"`
-	Isikukood                     string  `json:"isikukood"`
-	ValisKood                     *string `json:"valis_kood"`
-	ValisKoodRiik                 *string `json:"valis_kood_riik"`
-	ValisKoodRiikTekstina         *string `json:"valis_kood_riik_tekstina"`
-	Synniaeg                      *string `json:"synniaeg"`
-	AadressRiik                   string  `json:"aadress_riik"`
-	AadressRiikTekstina           string  `json:"aadress_riik_tekstina"`
-	KontrolliTeostamiseViis       string  `json:"kontrolli_teostamise_viis"`
-	KontrolliTeostamiseViisTekstina string `json:"kontrolli_teostamise_viis_tekstina"`
-	LahknevusteadeEsitatud        *string `json:"lahknevusteade_esitatud"`
+	KirjeID                         int64   `json:"kirje_id"`
+	AlgusKpv                        string  `json:"algus_kpv"`
+	LoppKpv                         *string `json:"lopp_kpv"`
+	Eesnimi                         string  `json:"eesnimi"`
+	Nimi                            string  `json:"nimi"`
+	Isikukood                       string  `json:"isikukood"`
+	ValisKood                       *string `json:"valis_kood"`
+	ValisKoodRiik                   *string `json:"valis_kood_riik"`
+	ValisKoodRiikTekstina           *string `json:"valis_kood_riik_tekstina"`
+	Synniaeg                        *string `json:"synniaeg"`
+	AadressRiik                     string  `json:"aadress_riik"`
+	AadressRiikTekstina             string  `json:"aadress_riik_tekstina"`
+	KontrolliTeostamiseViis         string  `json:"kontrolli_teostamise_viis"`
+	KontrolliTeostamiseViisTekstina string  `json:"kontrolli_teostamise_viis_tekstina"`
+	LahknevusteadeEsitatud          *string `json:"lahknevusteade_esitatud"`
 }
 
 type Kasusaaja struct {
-	ID           int `gorm:"primarykey"`
-	EttevotteID  int64
-	AlgusKpvInt  int64
-	LoppKpvInt   *int64
+	ID          int `gorm:"primarykey"`
+	EttevotteID int64
+	AlgusKpvInt int64
+	LoppKpvInt  *int64
 	KasusaajaJSON
 }
 
@@ -65,6 +65,7 @@ func ParseKasusaajad(db *gorm.DB, batchSize int) error {
 	}
 
 	kasusaajad := make([]Kasusaaja, 0, batchSize)
+	isikud := make([]Isik, 0, batchSize)
 
 	bar := utils.NewProgressBar(utils.COMPANIES, "Processing Kasusaajad")
 	for decoder.More() {
@@ -78,10 +79,16 @@ func ParseKasusaajad(db *gorm.DB, batchSize int) error {
 				AlgusKpvInt:   utils.Date(isik.AlgusKpv),
 				LoppKpvInt:    utils.DatePointer(isik.LoppKpv),
 			})
+			isik := CreateIsik(&isik.Isikukood, &isik.Eesnimi, &isik.Nimi)
+			if isik != nil {
+				isikud = append(isikud, *isik)
+			}
 		}
 		InsertBatch(db, &kasusaajad, batchSize)
+		InsertBatch(db, &isikud, batchSize)
 	}
 	InsertAll(db, &kasusaajad)
+	InsertAll(db, &isikud)
 
 	_, err = decoder.Token()
 	if err != nil {

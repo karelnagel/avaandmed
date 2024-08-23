@@ -5,6 +5,7 @@ import (
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func InitDB(path string) (*gorm.DB, error) {
@@ -12,6 +13,9 @@ func InitDB(path string) (*gorm.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect database: %w", err)
 	}
+
+	db.AutoMigrate(&Ettevote{})
+	db.AutoMigrate(&Isik{})
 
 	db.AutoMigrate(&Yldandmed{})
 	db.AutoMigrate(&Aadress{})
@@ -47,19 +51,26 @@ func InitDB(path string) (*gorm.DB, error) {
 
 func InsertBatch[T any](db *gorm.DB, items *[]T, batchSize int) {
 	if len(*items) >= batchSize {
-		db.Create(items)
+		db.Clauses(clause.OnConflict{DoNothing: true}).Create(items)
 		*items = (*items)[:0]
 	}
 }
 func InsertAll[T any](db *gorm.DB, items *[]T) {
 	if len(*items) > 0 {
-		db.Create(items)
+		db.Clauses(clause.OnConflict{DoNothing: true}).Create(items)
 		*items = (*items)[:0]
 	}
 }
 
 type Tabler interface {
 	TableName() string
+}
+
+func (Isik) TableName() string {
+	return "isikud"
+}
+func (Ettevote) TableName() string {
+	return "ettevotted"
 }
 
 func (Yldandmed) TableName() string {

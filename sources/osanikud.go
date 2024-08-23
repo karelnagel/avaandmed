@@ -94,6 +94,7 @@ func ParseOsanikud(db *gorm.DB, batchSize int) error {
 	}
 
 	osanikud := make([]Osanik, 0, batchSize)
+	isikud := make([]Isik, 0, batchSize)
 
 	bar := utils.NewProgressBar(utils.COMPANIES, "Processing Osanikud")
 	for decoder.More() {
@@ -109,10 +110,18 @@ func ParseOsanikud(db *gorm.DB, batchSize int) error {
 				VolitusteLoppemiseKpvInt: utils.DatePointer(isik.VolitusteLoppemiseKpv),
 				KontrolliAllikaKpvInt:    utils.DatePointer(isik.KontrolliAllikaKpv),
 			})
+			if isik.IsikuTyyp == "F" {
+				isik := CreateIsik(&isik.IsikukoodRegistrikood, isik.Eesnimi, &isik.NimiArinimi)
+				if isik != nil {
+					isikud = append(isikud, *isik)
+				}
+			}
 		}
 		InsertBatch(db, &osanikud, batchSize)
+		InsertBatch(db, &isikud, batchSize)
 	}
 	InsertAll(db, &osanikud)
+	InsertAll(db, &isikud)
 
 	_, err = decoder.Token()
 	if err != nil {

@@ -4,8 +4,8 @@ import (
 	"avaandmed/utils"
 	"encoding/json"
 	"fmt"
-	"os"
 	"gorm.io/gorm"
+	"os"
 )
 
 type KandevalisedJSON struct {
@@ -90,6 +90,7 @@ func ParseKandevalised(db *gorm.DB, batchSize int) error {
 	}
 
 	kandevalised := make([]KandevalineIsik, 0, batchSize)
+	isikud := make([]Isik, 0, batchSize)
 
 	bar := utils.NewProgressBar(utils.COMPANIES, "Processing Kandevalised")
 	for decoder.More() {
@@ -105,10 +106,18 @@ func ParseKandevalised(db *gorm.DB, batchSize int) error {
 				VolitusteLoppemiseKpvInt: utils.DatePointer(&isik.VolitusteLoppemiseKpv),
 				KontrolliAllikaKpvInt:    utils.DatePointer(&isik.KontrolliAllikaKpv),
 			})
+			if isik.IsikuTyyp == "F" {
+				isik := CreateIsik(&isik.IsikukoodRegistrikood, &isik.Eesnimi, &isik.NimiArinimi)
+				if isik != nil {
+					isikud = append(isikud, *isik)
+				}
+			}
 		}
 		InsertBatch(db, &kandevalised, batchSize)
+		InsertBatch(db, &isikud, batchSize)
 	}
 	InsertAll(db, &kandevalised)
+	InsertAll(db, &isikud)
 
 	_, err = decoder.Token()
 	if err != nil {

@@ -8,7 +8,6 @@ import (
 	"os"
 )
 
-
 func ParseYldandmed(db *gorm.DB, batchSize int) error {
 	source := utils.Source{
 		URL:      "https://avaandmed.ariregister.rik.ee/sites/default/files/avaandmed/ettevotja_rekvisiidid__yldandmed.json.zip",
@@ -33,6 +32,7 @@ func ParseYldandmed(db *gorm.DB, batchSize int) error {
 		return fmt.Errorf("error reading opening bracket: %v", err)
 	}
 
+	ettevotted := make([]Ettevote, 0, batchSize)
 	yldandmed := make([]Yldandmed, 0, batchSize)
 	aadressid := make([]Aadress, 0, batchSize)
 	arinimed := make([]Arinimi, 0, batchSize)
@@ -54,6 +54,10 @@ func ParseYldandmed(db *gorm.DB, batchSize int) error {
 		if err != nil {
 			return fmt.Errorf("error decoding JSON: %v", err)
 		}
+		ettevotted = append(ettevotted, Ettevote{
+			ID:   value.AriregistriKood,
+			Name: value.Nimi,
+		})
 
 		yldandmed = append(yldandmed, Yldandmed{
 			YldandmedJSON:                 value.Yldandmed.YldandmedJSON,
@@ -135,6 +139,7 @@ func ParseYldandmed(db *gorm.DB, batchSize int) error {
 			})
 		}
 
+		InsertBatch(db, &ettevotted, batchSize)
 		InsertBatch(db, &yldandmed, batchSize)
 		InsertBatch(db, &aadressid, batchSize)
 		InsertBatch(db, &arinimed, batchSize)
@@ -149,6 +154,7 @@ func ParseYldandmed(db *gorm.DB, batchSize int) error {
 		InsertBatch(db, &infoMajandusaastaAruannetest, batchSize)
 	}
 
+	InsertAll(db, &ettevotted)
 	InsertAll(db, &yldandmed)
 	InsertAll(db, &aadressid)
 	InsertAll(db, &arinimed)

@@ -13,10 +13,10 @@ import (
 )
 
 const COMPANIES = 346698
-const dateFormat = "02.01.2006"
+const DATE_FORMAT = "02.01.2006"
 
 func Date(v interface{}) int64 {
-	date, _ := time.Parse(dateFormat, v.(string))
+	date, _ := time.Parse(DATE_FORMAT, v.(string))
 	return date.Unix()
 }
 
@@ -24,7 +24,7 @@ func DatePointer(v *string) *int64 {
 	if v == nil {
 		return nil
 	}
-	date, err := time.Parse(dateFormat, *v)
+	date, err := time.Parse(DATE_FORMAT, *v)
 	if err != nil {
 		return nil
 	}

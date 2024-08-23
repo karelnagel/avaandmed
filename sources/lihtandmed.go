@@ -4,9 +4,9 @@ import (
 	"avaandmed/utils"
 	"encoding/csv"
 	"fmt"
+	"gorm.io/gorm"
 	"io"
 	"os"
-	"gorm.io/gorm"
 )
 
 type Lihtandmed struct {
@@ -69,7 +69,6 @@ func ParseLihtandmed(db *gorm.DB, batchSize int) error {
 			return fmt.Errorf("error reading CSV record: %v", err)
 		}
 
-		// fmt.Println(record)
 		lihtandmed = append(lihtandmed, Lihtandmed{
 			Nimi:                          record[0],
 			EttevotteID:                   record[1],

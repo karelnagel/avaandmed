@@ -25,7 +25,7 @@ func main() {
 	total := time.Now()
 	args := Args{}
 	flag.StringVar(&args.SQLitePath, "sqlite", "out.db", "Path to the SQLite database")
-	flag.IntVar(&args.BatchSize, "batch", 600, "Batch size")
+	flag.IntVar(&args.BatchSize, "batch", 500, "Batch size")
 	flag.BoolVar(&args.ForceDownload, "force-download", false, "Force downloading the latest data again, eg. it deletes the data directory")
 	flag.BoolVar(&args.FailQuietly, "fail-quietly", false, "Fail quietly")
 	srcs := flag.String("sources", DEFAULT_SOURCES, "Sources to process (comma separated)")

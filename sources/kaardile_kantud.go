@@ -86,6 +86,7 @@ func ParseKaardileKantud(db *gorm.DB, batchSize int) error {
 	}
 
 	kaardileKantud := make([]KaardileKantudIsik, 0, batchSize)
+	isikud := make([]Isik, 0, batchSize)
 
 	bar := utils.NewProgressBar(utils.COMPANIES, "Processing Kaardile Kantud")
 	for decoder.More() {
@@ -100,10 +101,18 @@ func ParseKaardileKantud(db *gorm.DB, batchSize int) error {
 				AlgusKpvInt:              utils.Date(isik.AlgusKpv),
 				LoppKpvInt:               utils.DatePointer(isik.LoppKpv),
 			})
+			if isik.IsikuTyyp == "F" {
+				isik := CreateIsik(&isik.IsikukoodRegistrikood, isik.Eesnimi, &isik.NimiArinimi)
+				if isik != nil {
+					isikud = append(isikud, *isik)
+				}
+			}
 		}
 		InsertBatch(db, &kaardileKantud, batchSize)
+		InsertBatch(db, &isikud, batchSize)
 	}
 	InsertAll(db, &kaardileKantud)
+	InsertAll(db, &isikud)
 
 	_, err = decoder.Token()
 	if err != nil {
