@@ -16,7 +16,14 @@ func DownloadFile(url string, fileName string) error {
 	defer out.Close()
 
 	// Get the data
-	resp, err := http.Get(url)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
