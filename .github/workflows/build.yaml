@@ -21,7 +21,7 @@ jobs:
         run: go mod download
 
       - name: Run Go app
-        run: go run main.go --sources=kaardile_kantud,kandevalised,kasusaajad,osanikud,majandusaasta,emta,debt,lihtandmed
+        run: go run main.go
 
       - name: Compress output
         run: gzip out.db
