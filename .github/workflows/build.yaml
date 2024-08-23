@@ -21,7 +21,7 @@ jobs:
         run: go mod download
 
       - name: Run Go app
-        run: go run main.go --sources=lihtandmed   # Adjust this to your app's entry point
+        run: go run main.go --sources=debt   # Adjust this to your app's entry point
 
       - name: Compress output
         run: gzip out.db
