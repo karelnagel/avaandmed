@@ -1,9 +1,12 @@
-name: Daily Build and Release
+name: Release
 
 on:
   schedule:
     - cron: "0 0 * * *" # Runs every day at midnight UTC
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build-and-release:
@@ -35,5 +38,5 @@ jobs:
 
           gh release create "$tag_name" \
             --title "$release_name" \
-            --notes "Latest data about Estonian companies" \
+            --notes "Latest data about every Estonian company in one SQLite database" \
             out.db.gz

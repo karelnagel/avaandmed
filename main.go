@@ -12,7 +12,8 @@ import (
 type Args struct {
 	SQLitePath    string
 	BatchSize     int
-	DeleteDataDir bool
+	ForceDownload bool
+	FailQuietly   bool
 	Sources       []string
 }
 
@@ -25,15 +26,16 @@ func main() {
 	args := Args{}
 	flag.StringVar(&args.SQLitePath, "sqlite", "out.db", "Path to the SQLite database")
 	flag.IntVar(&args.BatchSize, "batch", 600, "Batch size")
-	flag.BoolVar(&args.DeleteDataDir, "delete", false, "Delete data directory")
-	srcs := flag.String("sources", DEFAULT_SOURCES, "Sources to process (comma separated), default: "+DEFAULT_SOURCES)
+	flag.BoolVar(&args.ForceDownload, "force-download", false, "Force downloading the latest data again, eg. it deletes the data directory")
+	flag.BoolVar(&args.FailQuietly, "fail-quietly", false, "Fail quietly")
+	srcs := flag.String("sources", DEFAULT_SOURCES, "Sources to process (comma separated)")
 
 	flag.Parse()
 
 	args.Sources = strings.Split(*srcs, ",")
 
 	// Delete data directory
-	if args.DeleteDataDir {
+	if args.ForceDownload {
 		if err := os.RemoveAll(DATA_DIR); err != nil {
 			panic(fmt.Errorf("error removing data directory: %w", err))
 		}
@@ -80,9 +82,11 @@ func main() {
 		}
 
 		if err != nil {
-			// Disabled panic for now
-			fmt.Printf("Source %s failed: %s\n", source, err)
-			// panic(fmt.Errorf("source %s failed: %w", source, err))
+			if !args.FailQuietly {
+				panic(fmt.Errorf("source %s failed: %w", source, err))
+			} else {
+				fmt.Printf("Source %s failed: %s\n", source, err)
+			}
 		} else {
 			fmt.Printf("Source %s finished in %s\n", source, time.Since(t))
 		}
