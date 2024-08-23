@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 type Args struct {
@@ -23,9 +24,9 @@ func main() {
 	// Args
 	args := Args{}
 	flag.StringVar(&args.SQLitePath, "sqlite", "data/out.db", "Path to the SQLite database")
-	flag.IntVar(&args.BatchSize, "batch", 1000, "Batch size")
+	flag.IntVar(&args.BatchSize, "batch", 800, "Batch size")
 	flag.BoolVar(&args.DeleteDataDir, "delete", false, "Delete data directory")
-	srcs := flag.String("sources", DEFAULT_SOURCES, "Sources to process (comma separated)")
+	srcs := flag.String("sources", DEFAULT_SOURCES, "Sources to process (comma separated), default: "+DEFAULT_SOURCES)
 
 	flag.Parse()
 
@@ -52,8 +53,8 @@ func main() {
 	}
 
 	for _, source := range args.Sources {
+		t := time.Now()
 		fmt.Printf("Processing source %s\n", source)
-
 		switch source {
 		case "yldandmed":
 			err = sources.Yldandmed(db, args.BatchSize)
@@ -66,7 +67,7 @@ func main() {
 		if err != nil {
 			panic(fmt.Errorf("source %s failed: %w", source, err))
 		} else {
-			fmt.Printf("Source %s finished\n", source)
+			fmt.Printf("Source %s finished in %s\n", source, time.Since(t))
 		}
 	}
 }

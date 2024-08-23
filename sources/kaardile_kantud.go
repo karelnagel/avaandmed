@@ -1,12 +1,14 @@
 package sources
 
 import (
+	"avaandmed/database"
 	"avaandmed/utils"
 	"encoding/json"
 	"fmt"
+	"os"
+
 	"github.com/schollz/progressbar/v3"
 	"gorm.io/gorm"
-	"os"
 )
 
 func KaardileKantud(db *gorm.DB, batchSize int) error {
@@ -45,19 +47,25 @@ func KaardileKantud(db *gorm.DB, batchSize int) error {
 		return fmt.Errorf("error reading opening bracket: %v", err)
 	}
 
-	bar := progressbar.Default(companies)
+	kaardileKantud := make([]database.KaardileKantudIsik, 0, batchSize)
 
+	bar := progressbar.Default(companies)
 	for decoder.More() {
 		bar.Add(1)
-		var value map[string]interface{}
-		err := decoder.Decode(&value)
-		if err != nil {
-			return fmt.Errorf("error decoding JSON: %v", err)
+		var value database.KaardileKantudJSON
+		decoder.Decode(&value)
+		for _, isik := range value.KaardileKantudIsikud {
+			kaardileKantud = append(kaardileKantud, database.KaardileKantudIsik{
+				KaardileKantudIsikJSON:   isik,
+				EttevotteID:              value.AriregistriKood,
+				VolitusteLoppemiseKpvInt: utils.DatePointer(isik.VolitusteLoppemiseKpv),
+				AlgusKpvInt:              utils.Date(isik.AlgusKpv),
+				LoppKpvInt:               utils.DatePointer(isik.LoppKpv),
+			})
 		}
-
-		id := utils.Int(value["ariregistri_kood"])
-
+		database.InsertBatch(db, &kaardileKantud, batchSize)
 	}
+	database.InsertAll(db, &kaardileKantud)
 
 	_, err = decoder.Token()
 	if err != nil {
