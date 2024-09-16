@@ -139,6 +139,31 @@ func ParseYldandmed(db *gorm.DB, batchSize int) error {
 			})
 		}
 
+		for _, x := range value.Yldandmed.MarkusedKaardil {
+			markusedKaardil = append(markusedKaardil, MarkusKaardil{
+				MarkusKaardilJSON: x,
+				EttevotteID:       value.AriregistriKood,
+				AlgusKpvInt:       utils.Date(x.AlgusKpv),
+				LoppKpvInt:        utils.DatePointer(x.LoppKpv),
+			})
+
+		}
+		for _, x := range value.Yldandmed.OiguslikudVormid {
+			oiguslikudVormid = append(oiguslikudVormid, OiguslikVorm{
+				OiguslikVormJSON: x,
+				EttevotteID:      value.AriregistriKood,
+				AlgusKpvInt:      utils.Date(x.AlgusKpv),
+				LoppKpvInt:       utils.DatePointer(x.LoppKpv),
+			})
+		}
+		for _, x := range value.Yldandmed.Sidevahendid {
+			sidevahendid = append(sidevahendid, Sidevahend{
+				SidevahendJSON: x,
+				EttevotteID:    value.AriregistriKood,
+				LoppKpvInt:     utils.DatePointer(x.LoppKpv),
+			})
+		}
+
 		InsertBatch(db, &ettevotted, batchSize)
 		InsertBatch(db, &yldandmed, batchSize)
 		InsertBatch(db, &aadressid, batchSize)
