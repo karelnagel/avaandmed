@@ -72,9 +72,8 @@ func (Isik) TableName() string {
 func (Ettevote) TableName() string {
 	return "ettevotted"
 }
-
 func (Yldandmed) TableName() string {
-	return "ettevotted"
+	return "yldandmed"
 }
 func (Aadress) TableName() string {
 	return "aadressid"
